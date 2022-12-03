@@ -9,6 +9,7 @@ public class DayTests
 {
 	[Theory]
 	[TestDay(1)]
+	[TestDay(2)]
 	public void AllDays(Day day, string input, string expected)
 	{
 		day.Execute(input).Should().Be(expected);

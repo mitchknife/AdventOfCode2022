@@ -8,17 +8,19 @@ namespace AdventOfCode2022.Tests;
 public class DayTests
 {
 	[Theory]
-	[TestDay(1)]
-	[TestDay(2)]
-	public void AllDays(Day day, string input, string expected)
+	[DayTestCases(1)]
+	[DayTestCases(2)]
+	public void AllDays(IDay day, string input, string expectedOutput)
 	{
-		day.Execute(input).Should().Be(expected);
+		var inputLines = input.Split(Environment.NewLine);
+		var expectedOutputLines = expectedOutput.Split(Environment.NewLine);
+		day.Execute(inputLines).Should().Equal(expectedOutputLines);
 	}
 }
 
-public class TestDayAttribute : DataAttribute
+public class DayTestCasesAttribute : DataAttribute
 {
-	public TestDayAttribute(int day)
+	public DayTestCasesAttribute(int day)
 	{
 		m_day = day;
 	}
@@ -31,24 +33,24 @@ public class TestDayAttribute : DataAttribute
 		if (!Directory.Exists(testCasesFolder))
 			throw new InvalidOperationException($"Folder does not exist: {testCasesFolder}");
 
-		var dayType = typeof(Day).Assembly.GetTypes().FirstOrDefault(x => x.Name == dayTypeName);
+		var dayType = typeof(IDay).Assembly.GetTypes().FirstOrDefault(x => x.Name == dayTypeName);
 		if (dayType is null)
 			throw new InvalidOperationException($"Type does not exist: {dayTypeName}");
 
-		var day = (Day) Activator.CreateInstance(dayType);
+		var day = (IDay) Activator.CreateInstance(dayType);
 		foreach (var files in Directory.GetFiles(testCasesFolder, "*.txt").GroupBy(file => Path.GetFileName(file).Split('_')[0]))
 		{
 			string inFileName = $"{files.Key}_in.txt";
 			string inFile = files.FirstOrDefault(x => Path.GetFileName(x).ToLower() == inFileName);
 			if (inFile is null)
-				throw new InvalidOperationException($"Test input file missing: {inFileName}");
+				throw new InvalidOperationException($"File does not exist: {inFileName}");
 
 			string outFileName = $"{files.Key}_out.txt";
 			string outFile = files.FirstOrDefault(x => Path.GetFileName(x.ToLower()) == outFileName);
 			if (outFile is null)
-				throw new InvalidOperationException($"Expected output file missing: {outFileName}");
+				throw new InvalidOperationException($"File does not exist: {outFileName}");
 
-			yield return new object[] { day, File.ReadAllText(inFile), File.ReadAllText(outFile) };
+			yield return new object[] { day, File.ReadAllText(inFile).TrimEnd(), File.ReadAllText(outFile).TrimEnd() };
 		}
 	}
 

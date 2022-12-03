@@ -1,8 +1,8 @@
 namespace AdventOfCode2022;
 
-public class Day2 : Day
+public class Day2 : IDay
 {
-	public override IReadOnlyList<string> ExecuteCore(IReadOnlyList<string> input)
+	public IReadOnlyList<string> Execute(IReadOnlyList<string> input)
 	{
 		var rounds = new List<Round>();
 		foreach (string line in input.Where(x => x.Length > 0))

@@ -1,8 +1,8 @@
 namespace AdventOfCode2022;
 
-public class Day1 : Day
+public class Day1 : IDay
 {
-	public override IReadOnlyList<string> ExecuteCore(IReadOnlyList<string> input)
+	public IReadOnlyList<string> Execute(IReadOnlyList<string> input)
 	{
 		var elves = new List<Elf>();
 		var currentItems = new List<int>();
@@ -18,6 +18,9 @@ public class Day1 : Day
 				currentItems.Clear();
 			}
 		}
+
+		if (currentItems.Any())
+			elves.Add(new Elf(currentItems.Sum()));
 
 		var orderedElves = elves.OrderByDescending(x => x.TotalCalories).ToList();
 

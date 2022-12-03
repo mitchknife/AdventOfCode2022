@@ -1,6 +1,6 @@
 namespace AdventOfCode2022;
 
-public class Day8 : IDay
+public class Day06 : IDay
 {
 	public IReadOnlyList<string> Execute(IReadOnlyList<string> input)
 	{

@@ -27,7 +27,7 @@ public class DayTestCasesAttribute : DataAttribute
 
 	public override IEnumerable<object[]> GetData(MethodInfo testMethod)
 	{
-		string dayTypeName = $"Day{m_day}";
+		string dayTypeName = $"Day{m_day:D2}";
 
 		string testCasesFolder = Path.Combine(Environment.CurrentDirectory, $"TestCases/{dayTypeName}");
 		if (!Directory.Exists(testCasesFolder))

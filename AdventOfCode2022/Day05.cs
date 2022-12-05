@@ -1,4 +1,3 @@
-using System.Diagnostics;
 namespace AdventOfCode2022;
 
 public class Day05 : IDay
@@ -35,13 +34,15 @@ public class Day05 : IDay
 				.Select(int.Parse)
 				.ToList();
 
-			var part2PopppedItems = new List<char>();
+			var moves = Enumerable.Range(0, ints[0]);
+			int fromStackIndex = ints[1] - 1;
+			int toStackIndex = ints[2] - 1;
 
-			foreach (var _ in Enumerable.Range(0, ints[0]))
-				part1Stacks[ints[2] - 1].Push(part1Stacks[ints[1] - 1].Pop());
+			foreach (var _ in moves)
+				part1Stacks[toStackIndex].Push(part1Stacks[fromStackIndex].Pop());
 
-			foreach (var item in Enumerable.Range(0, ints[0]).Select(_ => part2Stacks[ints[1] - 1].Pop()).Reverse())
-				part2Stacks[ints[2] - 1].Push(item);
+			foreach (var item in moves.Select(_ => part2Stacks[fromStackIndex].Pop()).Reverse())
+				part2Stacks[toStackIndex].Push(item);
 		}
 
 		return new[]

@@ -13,6 +13,7 @@ public class DayTests
 	[DayTestCases(3)]
 	[DayTestCases(4)]
 	[DayTestCases(5)]
+	[DayTestCases(6)]
 	public void AllDays(IDay day, string input, string expectedOutput)
 	{
 		var inputLines = input.Split(Environment.NewLine);

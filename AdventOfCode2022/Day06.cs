@@ -12,7 +12,7 @@ public class Day06 : IDay
 		};
 	}
 
-	int FindMarker(string buffer, int count)
+	private static int FindMarker(string buffer, int count)
 	{
 		var queue = new Queue<char>();
 		foreach (var (ch, processed) in buffer.Select((x, i) => (x, i + 1)))

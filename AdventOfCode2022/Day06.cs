@@ -4,32 +4,27 @@ public class Day06 : IDay
 {
 	public IReadOnlyList<string> Execute(IReadOnlyList<string> input)
 	{
-		var output = new List<string>();
-		var counts = new[] { 4, 14 };
-
-		foreach (string line in input)
+		string buffer = input.Single();
+		return new[]
 		{
-			var queuesWithCounts = counts
-				.Select(count => (queue: new Queue<char>(), count))
-				.ToList();
+			FindMarker(buffer, 4).ToString(),
+			FindMarker(buffer, 14).ToString(),
+		};
+	}
 
-			foreach (var (ch, processed) in line.Select((x, i) => (x, i + 1)))
-			{
-				foreach (var (queue, count) in queuesWithCounts.ToList())
-				{
-					if (queue.Count == count)
-						queue.Dequeue();
-
-					queue.Enqueue(ch);
-					if (queue.Distinct().Count() == count)
-					{
-						queuesWithCounts.Remove((queue, count));
-						output.Add(processed.ToString());
-					}
-				}
-			}
+	int FindMarker(string buffer, int count)
+	{
+		var queue = new Queue<char>();
+		foreach (var (ch, processed) in buffer.Select((x, i) => (x, i + 1)))
+		{
+			if (queue.Count == count)
+				queue.Dequeue();
+			
+			queue.Enqueue(ch);
+			if (queue.Distinct().Count() == count)
+				return processed;
 		}
 
-		return output;
+		return 0;
 	}
 }

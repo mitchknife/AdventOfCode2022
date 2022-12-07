@@ -8,7 +8,7 @@ namespace AdventOfCode2022.Tests;
 public class DayTests
 {
 	[Theory]
-	[DayTestCases(1, 2, 3, 4, 5, 6)]
+	[DayTestCases(1, 2, 3, 4, 5, 6, 7)]
 	public void AllDays(IDay day, string input, string expectedOutput)
 	{
 		var inputLines = input.Split(Environment.NewLine);

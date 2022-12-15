@@ -2,7 +2,7 @@ namespace AdventOfCode2022;
 
 public class Day05 : IDay
 {
-	public IReadOnlyList<string> Execute(IReadOnlyList<string> input)
+	public IEnumerable<string> Execute(IReadOnlyList<string> input)
 	{
 		int indexOfEmptyLine = input.ToList().FindIndex(string.IsNullOrEmpty);
 		List<Stack<char>> part1Stacks = null;
@@ -45,10 +45,7 @@ public class Day05 : IDay
 				part2Stacks[toStackIndex].Push(item);
 		}
 
-		return new[]
-		{
-			string.Join("", part1Stacks.Select(x => x.Peek())),
-			string.Join("", part2Stacks.Select(x => x.Peek())),
-		};
+		yield return string.Join("", part1Stacks.Select(x => x.Peek()));
+		yield return string.Join("", part2Stacks.Select(x => x.Peek()));
 	}
 }

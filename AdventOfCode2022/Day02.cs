@@ -2,7 +2,7 @@ namespace AdventOfCode2022;
 
 public class Day02 : IDay
 {
-	public IReadOnlyList<string> Execute(IReadOnlyList<string> input)
+	public IEnumerable<string> Execute(IReadOnlyList<string> input)
 	{
 		var rounds = new List<Round>();
 		foreach (string line in input.Where(x => x.Length > 0))
@@ -14,11 +14,8 @@ public class Day02 : IDay
 				Me: s_actions.Single(x => x.MySymbol == lineSplit[1])));
 		}
 
-		return new[]
-		{
-			rounds.Sum(x => x.CalculateFirstScore()).ToString(),
-			rounds.Sum(x => x.CalculateSecondScore()).ToString(),
-		};
+		yield return rounds.Sum(x => x.CalculateFirstScore()).ToString();
+		yield return rounds.Sum(x => x.CalculateSecondScore()).ToString();
 	}
 
 	private static IReadOnlyList<Action> s_actions = new Action[]

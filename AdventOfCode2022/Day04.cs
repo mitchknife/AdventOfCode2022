@@ -2,18 +2,15 @@ namespace AdventOfCode2022;
 
 public class Day04 : IDay
 {
-	public IReadOnlyList<string> Execute(IReadOnlyList<string> input)
+	public IEnumerable<string> Execute(IReadOnlyList<string> input)
 	{
 		var assignmentPairs = input
 			.Select(line => line.Split(','))
 			.Select(split => new AssignmentPairs(getRange(split[0]), getRange(split[1])))
 			.ToList();
 
-		return new[]
-		{
-			assignmentPairs.Count(p => p.CommonSections.Count == p.Sections1.Count || p.CommonSections.Count == p.Sections2.Count).ToString(),
-			assignmentPairs.Count(p => p.CommonSections.Any()).ToString(),
-		};
+		yield return assignmentPairs.Count(p => p.CommonSections.Count == p.Sections1.Count || p.CommonSections.Count == p.Sections2.Count).ToString();
+		yield return assignmentPairs.Count(p => p.CommonSections.Any()).ToString();
 
 		IReadOnlyList<int> getRange(string range)
 		{

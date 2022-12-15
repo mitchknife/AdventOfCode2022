@@ -2,7 +2,7 @@ namespace AdventOfCode2022;
 
 public class Day07 : IDay
 {
-	public IReadOnlyList<string> Execute(IReadOnlyList<string> input)
+	public IEnumerable<string> Execute(IReadOnlyList<string> input)
 	{
 		var baseDir = new Dir("/", null);
 		var currentDir = baseDir;
@@ -20,11 +20,8 @@ public class Day07 : IDay
 		int needToFreeSize = 30000000 - (70000000 - baseDir.TotalSize);
 		var dirSizes = baseDir.EnumerateAllSubDirs().Select(x => x.TotalSize).ToList();
 
-		return new[]
-		{
-			dirSizes.Where(x => x <= 100000).Sum().ToString(),
-			dirSizes.Where(x => x >= needToFreeSize).OrderBy(x => x).First().ToString(),
-		};
+		yield return dirSizes.Where(x => x <= 100000).Sum().ToString();
+		yield return dirSizes.Where(x => x >= needToFreeSize).OrderBy(x => x).First().ToString();
 	}
 
 	record Dir(string Name, Dir Parent)

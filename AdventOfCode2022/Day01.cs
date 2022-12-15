@@ -2,7 +2,7 @@ namespace AdventOfCode2022;
 
 public class Day01 : IDay
 {
-	public IReadOnlyList<string> Execute(IReadOnlyList<string> input)
+	public IEnumerable<string> Execute(IReadOnlyList<string> input)
 	{
 		var elves = new List<Elf>();
 		var currentItems = new List<int>();
@@ -24,11 +24,8 @@ public class Day01 : IDay
 
 		var orderedElves = elves.OrderByDescending(x => x.TotalCalories).ToList();
 
-		return new[]
-		{
-			orderedElves.Take(1).Sum(x => x.TotalCalories).ToString(),
-			orderedElves.Take(3).Sum(x => x.TotalCalories).ToString(),
-		};
+		yield return orderedElves.Take(1).Sum(x => x.TotalCalories).ToString();
+		yield return orderedElves.Take(3).Sum(x => x.TotalCalories).ToString();
 	}
 
 	record Elf(int TotalCalories);

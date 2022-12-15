@@ -2,14 +2,11 @@ namespace AdventOfCode2022;
 
 public class Day11 : IDay
 {
-	public IReadOnlyList<string> Execute(IReadOnlyList<string> input)
+	public IEnumerable<string> Execute(IReadOnlyList<string> input)
 	{
 		var part1Monkeys = ObserveMonkeys(input, 20, 3);
 
-		return new[]
-		{
-			part1Monkeys.OrderByDescending(x => x.TotalItemsInspected).Take(2).Select(x => x.TotalItemsInspected).Aggregate(1, (x, y) => x * y).ToString(),
-		};
+		yield return part1Monkeys.OrderByDescending(x => x.TotalItemsInspected).Take(2).Select(x => x.TotalItemsInspected).Aggregate(1, (x, y) => x * y).ToString();
 	}
 
 	static IReadOnlyList<Monkey> ObserveMonkeys(IEnumerable<string> input, int rounds, int worryModifier)

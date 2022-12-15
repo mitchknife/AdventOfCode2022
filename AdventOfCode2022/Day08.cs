@@ -2,15 +2,12 @@ namespace AdventOfCode2022;
 
 public class Day08 : IDay
 {
-	public IReadOnlyList<string> Execute(IReadOnlyList<string> input)
+	public IEnumerable<string> Execute(IReadOnlyList<string> input)
 	{
 		var treeGrid = new TreeGrid(input.SelectMany((line, y) => line.Select((ch, x) => (new Vector(x, y), int.Parse(ch.ToString())))));
 
-		return new[]
-		{
-			treeGrid.CalculateNumberOfVisibleTrees().ToString(),
-			treeGrid.CalculateMaxScenicScore().ToString(),
-		};
+		yield return treeGrid.CalculateNumberOfVisibleTrees().ToString();
+		yield return treeGrid.CalculateMaxScenicScore().ToString();
 	}
 
 	private sealed record Vector(int X, int Y);

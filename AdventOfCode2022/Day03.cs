@@ -2,7 +2,7 @@ namespace AdventOfCode2022;
 
 public class Day03 : IDay
 {
-	public IReadOnlyList<string> Execute(IReadOnlyList<string> input)
+	public IEnumerable<string> Execute(IReadOnlyList<string> input)
 	{
 		var rucksacks = input.Select(line => new Rucksack(
 			Comp1: line.Substring(0, line.Length / 2).Select(ch => new Item(ch)).ToList(),
@@ -15,11 +15,8 @@ public class Day03 : IDay
 			.Select(g => new RucksackGroup(g.Select(x => x.rucksack).ToList()))
 			.ToList();
 
-		return new[]
-		{
-			rucksacks.Sum(r => r.GetCommonItem().Priority).ToString(),
-			rucksackGroups.Sum(r => r.GetCommonItem().Priority).ToString(),
-		};
+		yield return rucksacks.Sum(r => r.GetCommonItem().Priority).ToString();
+		yield return rucksackGroups.Sum(r => r.GetCommonItem().Priority).ToString();
 	}
 
 	record Item(char Value)

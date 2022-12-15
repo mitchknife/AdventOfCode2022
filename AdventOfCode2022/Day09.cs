@@ -2,7 +2,7 @@ namespace AdventOfCode2022;
 
 public class Day09 : IDay
 {
-	public IReadOnlyList<string> Execute(IReadOnlyList<string> input)
+	public IEnumerable<string> Execute(IReadOnlyList<string> input)
 	{
 		var rope1 = new Rope(2);
 		var rope2 = new Rope(10);
@@ -24,11 +24,8 @@ public class Day09 : IDay
 			}
 		}
 
-		return new[]
-		{
-			rope1.GetNumberOfUniqueTailLocations().ToString(),
-			rope2.GetNumberOfUniqueTailLocations().ToString(),
-		};
+		yield return rope1.GetNumberOfUniqueTailLocations().ToString();
+		yield return rope2.GetNumberOfUniqueTailLocations().ToString();
 	}
 
 	private record Vector(int X, int Y);

@@ -8,9 +8,12 @@ namespace AdventOfCode2022.Tests;
 public class DayTests
 {
 	[Theory]
-	[DayTestCases(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)]
+	[DayTestCases(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)]
 	public void AllDays(IDay day, string input, string expectedOutput)
 	{
+		if (input == "not implemented")
+			throw new NotImplementedException();
+
 		var inputLines = input.Split(Environment.NewLine);
 		var expectedOutputLines = expectedOutput.Split(Environment.NewLine);
 		day.Execute(inputLines).Should().Equal(expectedOutputLines);

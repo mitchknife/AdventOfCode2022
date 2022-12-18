@@ -31,13 +31,13 @@ public class Day12 : IDay
 				m_cellsByNodeId.Add(nodeId, cell);
 			}
 
-			var directions = new Vector[] { new(0, -1), new(0, 1), new(1, 0), new(-1, 0) };
+			var directions = new Vector[] { Vector.Up, Vector.Down, Vector.Right, Vector.Left };
 			foreach (var fromNodeId in m_nodeIdsByLocation.Values)
 			{
 				var fromCell = m_cellsByNodeId[fromNodeId];
 				foreach (var direction in directions)
 				{
-					var toLocation = new Vector(fromCell.Location.X + direction.X, fromCell.Location.Y + direction.Y);
+					var toLocation = fromCell.Location.Add(direction);
 					var toNodeId = m_nodeIdsByLocation.GetValueOrDefault(toLocation);
 					if (toNodeId > 0)
 					{
@@ -69,6 +69,4 @@ public class Day12 : IDay
 	{
 		public int Height => Char == 'S' ? 'a' : Char == 'E' ? 'z' : Char;
 	}
-
-	private record Vector(int X, int Y);
 }

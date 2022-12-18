@@ -10,8 +10,6 @@ public class Day08 : IDay
 		yield return treeGrid.CalculateMaxScenicScore().ToString();
 	}
 
-	private sealed record Vector(int X, int Y);
-
 	private sealed class TreeGrid
 	{
 		public TreeGrid(IEnumerable<(Vector, int)> trees)
@@ -30,23 +28,23 @@ public class Day08 : IDay
 		private record Tree(Vector Location, int Height, TreeGrid TreeGrid)
 		{
 			public bool IsVisible =>
-				!GetTreesInDirection(new(0, -1)).Any(x => x.Height >= Height) ||
-				!GetTreesInDirection(new(1, 0)).Any(x => x.Height >= Height) ||
-				!GetTreesInDirection(new(0, 1)).Any(x => x.Height >= Height) ||
-				!GetTreesInDirection(new(-1, 0)).Any(x => x.Height >= Height);
+				!GetTreesInDirection(Vector.Up).Any(x => x.Height >= Height) ||
+				!GetTreesInDirection(Vector.Right).Any(x => x.Height >= Height) ||
+				!GetTreesInDirection(Vector.Down).Any(x => x.Height >= Height) ||
+				!GetTreesInDirection(Vector.Left).Any(x => x.Height >= Height);
 			
 			public int ScenicScore =>
-				CalculateViewingDistance(new(0, -1)) *
-				CalculateViewingDistance(new(1, 0)) *
-				CalculateViewingDistance(new(0, 1)) *
-				CalculateViewingDistance(new(-1, 0));
+				CalculateViewingDistance(Vector.Up) *
+				CalculateViewingDistance(Vector.Right) *
+				CalculateViewingDistance(Vector.Down) *
+				CalculateViewingDistance(Vector.Left);
 
 			private IEnumerable<Tree> GetTreesInDirection(Vector direction)
 			{
 				Vector nextLocation = Location;
 				while (true)
 				{
-					nextLocation = new Vector(nextLocation.X + direction.X, nextLocation.Y + direction.Y);
+					nextLocation = nextLocation.Add(direction);
 					var tree = TreeGrid.m_trees.GetValueOrDefault(nextLocation);
 					if (tree is null)
 						break;

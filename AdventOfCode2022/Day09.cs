@@ -28,19 +28,17 @@ public class Day09 : IDay
 		yield return rope2.GetNumberOfUniqueTailLocations().ToString();
 	}
 
-	private record Vector(int X, int Y);
-
 	private class Rope
 	{
 		public Rope(int numberOfSegments)
 		{
-			m_segments = Enumerable.Range(0, numberOfSegments).Select(_ => new Vector(0, 0)).ToList();
-			m_uniqueTailLocations = new HashSet<Vector>(new[] { new Vector(0,0) });
+			m_segments = Enumerable.Range(0, numberOfSegments).Select(_ => Vector.Zero).ToList();
+			m_uniqueTailLocations = new HashSet<Vector>(new[] { Vector.Zero });
 		}
 
 		public void MoveHead(Vector direction)
 		{
-			m_segments[0] = new Vector(m_segments[0].X + direction.X, m_segments[0].Y + direction.Y);
+			m_segments[0] = m_segments[0].Add(direction);
 			for (int i = 1; i < m_segments.Count; i++)
 			{
 				var segStart = m_segments[i - 1];

@@ -21,18 +21,6 @@ public class Day14 : IDay
 		yield return grainsOfSand.ToString();
 	}
 
-	private record Vector(int X, int Y)
-	{
-		public Vector Add(Vector vector) => new Vector(X + vector.X, Y + vector.Y);
-		public Vector Subtract(Vector vector) => new Vector(X - vector.X, Y - vector.Y);
-		public override string ToString() => $"({X}, {Y})";
-
-		public static readonly Vector Up = new(0, -1);
-		public static readonly Vector Down = new(0, 1);
-		public static readonly Vector Left = new(-1, 0);
-		public static readonly Vector Right = new(1, 0);
-	}
-
 	private class Cave
 	{
 		public Cave(IReadOnlyList<string> input)

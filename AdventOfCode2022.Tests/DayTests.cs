@@ -12,22 +12,9 @@ public class DayTests
 	public void AllDays(IDay day, string input, string expectedOutput)
 	{
 		var inputLines = input.Split(Environment.NewLine);
-		if (inputLines[0] == "not implemented")
-			throw new NotImplementedException();
-
-		if (inputLines[0] == "slow test")
-		{
-			if (!RunSlowTests)
-				return;
-
-			inputLines = inputLines.Skip(1).ToArray();
-		}
-
 		var expectedOutputLines = expectedOutput.Split(Environment.NewLine);
 		day.Execute(inputLines).Should().Equal(expectedOutputLines);
 	}
-
-	public static bool RunSlowTests = bool.Parse(Environment.GetEnvironmentVariable(nameof(RunSlowTests)) ?? "false");
 }
 
 public class DayTestCasesAttribute : DataAttribute
@@ -37,8 +24,12 @@ public class DayTestCasesAttribute : DataAttribute
 		m_dayNumbers = days;
 	}
 
+	public static bool RunSlowTests = bool.Parse(Environment.GetEnvironmentVariable(nameof(RunSlowTests)) ?? "false");
+
 	public override IEnumerable<object[]> GetData(MethodInfo testMethod)
 	{
+		var notImplementedTests = new List<string>();
+		var slowTests = new List<string>();
 		foreach (int dayNumber in m_dayNumbers)
 		{
 			string dayTypeName = $"Day{dayNumber:D2}";
@@ -63,8 +54,32 @@ public class DayTestCasesAttribute : DataAttribute
 				if (outFile is null)
 					throw new InvalidOperationException($"File does not exist: {outFileName}");
 
-				yield return new object[] { day, File.ReadAllText(inFile).TrimEnd(), File.ReadAllText(outFile).TrimEnd() };
+				string input = File.ReadAllText(inFile).TrimEnd();
+				string output = File.ReadAllText(outFile).TrimEnd();
+				if (input.StartsWith("not implemented"))
+				{
+					notImplementedTests.Add($"{dayType.Name}/{inFileName}");
+					continue;
+				}
+
+				if (input.StartsWith("slow test"))
+				{
+					if (!RunSlowTests)
+					{
+						slowTests.Add($"{dayType.Name}/{inFileName}");
+						continue;
+					}
+
+					input = input.Substring(9).TrimStart();
+				}
+
+				yield return new object[] { day, input, output };
 			}
+
+			if (notImplementedTests.Count > 0)
+				Console.WriteLine($"Skipping not implemented tests: {string.Join(", ", notImplementedTests)}");
+			if (slowTests.Count > 0)
+				Console.WriteLine($"Skipping slow tests: {string.Join(", ", slowTests)}");
 		}
 	}
 

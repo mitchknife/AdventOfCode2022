@@ -8,16 +8,26 @@ namespace AdventOfCode2022.Tests;
 public class DayTests
 {
 	[Theory]
-	[DayTestCases(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14)]
+	[DayTestCases(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)]
 	public void AllDays(IDay day, string input, string expectedOutput)
 	{
-		if (input == "not implemented")
+		var inputLines = input.Split(Environment.NewLine);
+		if (inputLines[0] == "not implemented")
 			throw new NotImplementedException();
 
-		var inputLines = input.Split(Environment.NewLine);
+		if (inputLines[0] == "slow test")
+		{
+			if (!RunSlowTests)
+				return;
+
+			inputLines = inputLines.Skip(1).ToArray();
+		}
+
 		var expectedOutputLines = expectedOutput.Split(Environment.NewLine);
 		day.Execute(inputLines).Should().Equal(expectedOutputLines);
 	}
+
+	public static bool RunSlowTests = bool.Parse(Environment.GetEnvironmentVariable(nameof(RunSlowTests)) ?? "false");
 }
 
 public class DayTestCasesAttribute : DataAttribute

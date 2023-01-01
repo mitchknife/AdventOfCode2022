@@ -6,7 +6,7 @@ public class Day18 : IDay
 	{
 		var cubes = input
 			.Select(x => x.Split(','))
-			.Select(tokens => new Cube(new Vector(int.Parse(tokens[0]), int.Parse(tokens[1]), int.Parse(tokens[2]))))
+			.Select(tokens => new Cube(new Vector3D(int.Parse(tokens[0]), int.Parse(tokens[1]), int.Parse(tokens[2]))))
 			.ToHashSet();
 
 		yield return GetExposedSides(cubes).Count.ToString();
@@ -15,10 +15,10 @@ public class Day18 : IDay
 
 	private IReadOnlyList<Side> GetExposedSides(HashSet<Cube> cubes, bool onlySurfaceSides = false)
 	{
-		var min = new Vector(int.MaxValue, int.MaxValue, int.MaxValue);
-		var max = new Vector(int.MinValue, int.MinValue, int.MinValue);
+		var min = Vector3D.Max;
+		var max = Vector3D.Min;
 		var exposedSides = new HashSet<Side>();
-		var corners = new HashSet<Vector>();
+		var corners = new HashSet<Vector3D>();
 		foreach (var cube in cubes)
 		{
 			foreach (var side in cube.GetSides())
@@ -26,8 +26,8 @@ public class Day18 : IDay
 				if (!exposedSides.Add(side))
 					exposedSides.Remove(side);
 
-				min = new Vector(Math.Min(min.X, cube.Location.X), Math.Min(min.Y, cube.Location.Y), Math.Min(min.Z, cube.Location.Z));
-				max = new Vector(Math.Max(max.X, cube.Location.X), Math.Max(max.Y, cube.Location.Y), Math.Max(max.Z, cube.Location.Z));
+				min = new Vector3D(Math.Min(min.X, cube.Location.X), Math.Min(min.Y, cube.Location.Y), Math.Min(min.Z, cube.Location.Z));
+				max = new Vector3D(Math.Max(max.X, cube.Location.X), Math.Max(max.Y, cube.Location.Y), Math.Max(max.Z, cube.Location.Z));
 				corners.UnionWith(cube.GetCorners());
 			}
 		}
@@ -61,7 +61,7 @@ public class Day18 : IDay
 		return exposedSides.ToList();
 	}
 
-	private record Cube(Vector Location)
+	private record Cube(Vector3D Location)
 	{
 		public IEnumerable<Side> GetSides()
 		{
@@ -83,7 +83,7 @@ public class Day18 : IDay
 			yield return new Cube(Location - (0, 0, 1));
 		}
 
-		public IEnumerable<Vector> GetCorners()
+		public IEnumerable<Vector3D> GetCorners()
 		{
 			yield return Location - (0, 0, 0);
 			yield return Location - (0, 0, 1);
@@ -96,6 +96,6 @@ public class Day18 : IDay
 		}
 	}
 
-	private record Side(Vector Location, Plane Plane);
+	private record Side(Vector3D Location, Plane Plane);
 	private enum Plane { X, Y, Z };
 }

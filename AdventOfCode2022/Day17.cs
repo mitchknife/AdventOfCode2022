@@ -6,8 +6,8 @@ public class Day17 : IDay
 	{
 		var vents = input[0].Select((x, i) => x switch
 		{
-			'<' => new Vent(i, Vector.Left),
-			'>' => new Vent(i, Vector.Right),
+			'<' => new Vent(i, Vector2D.Left),
+			'>' => new Vent(i, Vector2D.Right),
 			_ => throw new NotSupportedException($"{x}"),
 		});
 
@@ -15,18 +15,18 @@ public class Day17 : IDay
 		yield return GetRockTowerHeight(1_000_000_000_000, vents).ToString();
 	}
 
-	private record Vent(int Id, Vector Direction);
+	private record Vent(int Id, Vector2D Direction);
 
-	private record Rock(int Id, IReadOnlyList<Vector> Locations)
+	private record Rock(int Id, IReadOnlyList<Vector2D> Locations)
 	{
-		public Rock Move(Vector direction) => this with { Locations = Locations.Select(x => x.Add(direction)).ToList() };
+		public Rock Move(Vector2D direction) => this with { Locations = Locations.Select(x => x + direction).ToList() };
 	}
 
 	private long GetRockTowerHeight(long totalRockCount, IEnumerable<Vent> vents)
 	{
 		long rockCount = 0;
 		long towerHeight = 0;
-		var floor = new HashSet<Vector>();
+		var floor = new HashSet<Vector2D>();
 		var snapshots = new Dictionary<(int, int, string), (long, long)>();
 		var rockStream = GetInfiniteStream(s_rocks).GetEnumerator();
 		var ventStream = GetInfiniteStream(vents).GetEnumerator();
@@ -35,13 +35,13 @@ public class Day17 : IDay
 		{
 			int maxFloorHeight = -(floor.MinBy(x => x.Y)?.Y ?? 0);
 			var rock = rockStream.Current
-				.Move(Vector.Right.Multiply(3))
-				.Move(Vector.Up.Multiply(maxFloorHeight + 4));
+				.Move(Vector2D.Right * 3)
+				.Move(Vector2D.Up * (maxFloorHeight + 4));
 
 			while (ventStream.MoveNext())
 			{
 				tryMoveRock(ref rock, ventStream.Current.Direction);
-				if (!tryMoveRock(ref rock, Vector.Down))
+				if (!tryMoveRock(ref rock, Vector2D.Down))
 					break;
 			}
 
@@ -80,14 +80,14 @@ public class Day17 : IDay
 				int minFloorHeight = maxFloorHeights.Min();
 				floor = floor
 					.Where(x => -x.Y > minFloorHeight)
-					.Select(x => x.Add(Vector.Down.Multiply(minFloorHeight)))
+					.Select(x => x.Add(Vector2D.Down * minFloorHeight))
 					.ToHashSet();
 			}
 		}
 
 		return towerHeight;
 
-		bool tryMoveRock(ref Rock rock, Vector direction)
+		bool tryMoveRock(ref Rock rock, Vector2D direction)
 		{
 			var movedRock = rock.Move(direction);
 			foreach (var location in movedRock.Locations)
@@ -112,10 +112,10 @@ public class Day17 : IDay
 
 	private static readonly IReadOnlyList<Rock> s_rocks = new[]
 	{
-		new Rock(0, new Vector[] { new(0, 0), new(1, 0), new(2, 0), new(3, 0) }),
-		new Rock(1, new Vector[] { new(0, -1), new(1, -1), new(2, -1), new(1, 0), new(1, -2) }),
-		new Rock(2, new Vector[] { new(0, 0), new(1, 0), new(2, 0), new(2, -1), new(2, -2) }),
-		new Rock(3, new Vector[] { new(0, 0), new(0, -1), new(0, -2), new(0, -3) }),
-		new Rock(4, new Vector[] { new(0, 0), new(0, -1), new(1, 0), new(1, -1) }),
+		new Rock(0, new Vector2D[] { (0, 0), (1, 0), (2, 0), (3, 0) }),
+		new Rock(1, new Vector2D[] { (0, -1), (1, -1), (2, -1), (1, 0), (1, -2) }),
+		new Rock(2, new Vector2D[] { (0, 0), (1, 0), (2, 0), (2, -1), (2, -2) }),
+		new Rock(3, new Vector2D[] { (0, 0), (0, -1), (0, -2), (0, -3) }),
+		new Rock(4, new Vector2D[] { (0, 0), (0, -1), (1, 0), (1, -1) }),
 	};
 }

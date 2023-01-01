@@ -4,7 +4,7 @@ public class Day08 : IDay
 {
 	public IEnumerable<string> Execute(IReadOnlyList<string> input)
 	{
-		var treeGrid = new TreeGrid(input.SelectMany((line, y) => line.Select((ch, x) => (new Vector(x, y), int.Parse(ch.ToString())))));
+		var treeGrid = new TreeGrid(input.SelectMany((line, y) => line.Select((ch, x) => (new Vector2D(x, y), int.Parse(ch.ToString())))));
 
 		yield return treeGrid.CalculateNumberOfVisibleTrees().ToString();
 		yield return treeGrid.CalculateMaxScenicScore().ToString();
@@ -12,7 +12,7 @@ public class Day08 : IDay
 
 	private sealed class TreeGrid
 	{
-		public TreeGrid(IEnumerable<(Vector, int)> trees)
+		public TreeGrid(IEnumerable<(Vector2D, int)> trees)
 		{
 			foreach (var (location, height) in trees)
 			{
@@ -25,26 +25,26 @@ public class Day08 : IDay
 		public int CalculateNumberOfVisibleTrees() => m_trees.Values.Count(x => x.IsVisible);
 		public int CalculateMaxScenicScore() => m_trees.Values.Select(x => x.ScenicScore).Max();
 
-		private record Tree(Vector Location, int Height, TreeGrid TreeGrid)
+		private record Tree(Vector2D Location, int Height, TreeGrid TreeGrid)
 		{
 			public bool IsVisible =>
-				!GetTreesInDirection(Vector.Up).Any(x => x.Height >= Height) ||
-				!GetTreesInDirection(Vector.Right).Any(x => x.Height >= Height) ||
-				!GetTreesInDirection(Vector.Down).Any(x => x.Height >= Height) ||
-				!GetTreesInDirection(Vector.Left).Any(x => x.Height >= Height);
+				!GetTreesInDirection(Vector2D.Up).Any(x => x.Height >= Height) ||
+				!GetTreesInDirection(Vector2D.Right).Any(x => x.Height >= Height) ||
+				!GetTreesInDirection(Vector2D.Down).Any(x => x.Height >= Height) ||
+				!GetTreesInDirection(Vector2D.Left).Any(x => x.Height >= Height);
 			
 			public int ScenicScore =>
-				CalculateViewingDistance(Vector.Up) *
-				CalculateViewingDistance(Vector.Right) *
-				CalculateViewingDistance(Vector.Down) *
-				CalculateViewingDistance(Vector.Left);
+				CalculateViewingDistance(Vector2D.Up) *
+				CalculateViewingDistance(Vector2D.Right) *
+				CalculateViewingDistance(Vector2D.Down) *
+				CalculateViewingDistance(Vector2D.Left);
 
-			private IEnumerable<Tree> GetTreesInDirection(Vector direction)
+			private IEnumerable<Tree> GetTreesInDirection(Vector2D direction)
 			{
-				Vector nextLocation = Location;
+				Vector2D nextLocation = Location;
 				while (true)
 				{
-					nextLocation = nextLocation.Add(direction);
+					nextLocation += direction;
 					var tree = TreeGrid.m_trees.GetValueOrDefault(nextLocation);
 					if (tree is null)
 						break;
@@ -53,7 +53,7 @@ public class Day08 : IDay
 				}
 			}
 
-			private int CalculateViewingDistance(Vector direction)
+			private int CalculateViewingDistance(Vector2D direction)
 			{
 				int viewDistance = 0;
 				foreach (var tree in GetTreesInDirection(direction))
@@ -68,6 +68,6 @@ public class Day08 : IDay
 
 		private int m_maxX;
 		private int m_maxY;
-		private readonly Dictionary<Vector, Tree> m_trees = new Dictionary<Vector, Tree>();
+		private readonly Dictionary<Vector2D, Tree> m_trees = new Dictionary<Vector2D, Tree>();
 	}
 }

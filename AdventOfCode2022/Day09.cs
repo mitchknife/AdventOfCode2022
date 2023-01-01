@@ -10,10 +10,10 @@ public class Day09 : IDay
 		{
 			var direction = tokens[0] switch
 			{
-				"U" => new Vector(0, 1),
-				"R" => new Vector(1, 0),
-				"D" => new Vector(0, -1),
-				"L" => new Vector(-1, 0),
+				"U" => (0, 1),
+				"R" => (1, 0),
+				"D" => (0, -1),
+				"L" => (-1, 0),
 				_ => throw new ArgumentOutOfRangeException(),
 			};
 			
@@ -32,24 +32,23 @@ public class Day09 : IDay
 	{
 		public Rope(int numberOfSegments)
 		{
-			m_segments = Enumerable.Range(0, numberOfSegments).Select(_ => Vector.Zero).ToList();
-			m_uniqueTailLocations = new HashSet<Vector>(new[] { Vector.Zero });
+			m_segments = Enumerable.Range(0, numberOfSegments).Select(_ => Vector2D.Zero).ToList();
+			m_uniqueTailLocations = new HashSet<Vector2D>(new[] { Vector2D.Zero });
 		}
 
-		public void MoveHead(Vector direction)
+		public void MoveHead(Vector2D direction)
 		{
 			m_segments[0] = m_segments[0].Add(direction);
 			for (int i = 1; i < m_segments.Count; i++)
 			{
 				var segStart = m_segments[i - 1];
 				var segEnd = m_segments[i];
-				int xDiff = segStart.X - segEnd.X;
-				int yDiff = segStart.Y - segEnd.Y;
+				var (xDiff, yDiff) = segStart - segEnd;
 				if (Math.Abs(xDiff) == 2 || Math.Abs(yDiff) == 2)
 				{
 					int moveX = xDiff == 0 ? 0 : xDiff / Math.Abs(xDiff);
 					int moveY = yDiff == 0 ? 0 : yDiff / Math.Abs(yDiff);
-					m_segments[i] = new Vector(segEnd.X + moveX, segEnd.Y + moveY);
+					m_segments[i] = segEnd + (moveX, moveY);
 				}
 			}
 
@@ -58,7 +57,7 @@ public class Day09 : IDay
 
 		public int GetNumberOfUniqueTailLocations() => m_uniqueTailLocations.Count();
 
-		private readonly List<Vector> m_segments = new List<Vector>();
-		private readonly HashSet<Vector> m_uniqueTailLocations = new HashSet<Vector>();
+		private readonly List<Vector2D> m_segments = new List<Vector2D>();
+		private readonly HashSet<Vector2D> m_uniqueTailLocations = new HashSet<Vector2D>();
 	}
 }

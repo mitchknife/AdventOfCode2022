@@ -11,10 +11,10 @@ public class Day15 : IDay
 			var tokens = line.Split(' ');
 
 			sensors.Add(new Sensor(
-				Location: new Vector(
+				Location: (
 					int.Parse(tokens[2].Split('=')[1].Trim(',')),
 					int.Parse(tokens[3].Split('=')[1].Trim(':'))),
-				Beacon: new Vector(
+				Beacon: (
 					int.Parse(tokens[8].Split('=')[1].Trim(',')),
 					int.Parse(tokens[9].Split('=')[1]))));
 		}
@@ -32,7 +32,7 @@ public class Day15 : IDay
 			.SelectMany(x => Enumerable.Range(x.From, x.To - x.From + 1))
 			.Distinct()
 			.Where(x => !part1BeaconXLocations.Contains(x))
-			.Select(x => new Vector(x, part1LineToCheck))
+			.Select(x => new Vector2D(x, part1LineToCheck))
 			.Count()
 			.ToString();
 
@@ -78,7 +78,7 @@ public class Day15 : IDay
 
 	private record Range(int From, int To);
 
-	private record Sensor(Vector Location, Vector Beacon)
+	private record Sensor(Vector2D Location, Vector2D Beacon)
 	{
 		public int DistanceFromBeacon = Location.Distance(Beacon);
 

@@ -7,7 +7,7 @@ public class Day14 : IDay
 		var cave = new Cave(input);
 
 		int grainsOfSand = 0;
-		while(cave.DropSand(new(500, 0), floorLevel: null))
+		while(cave.DropSand((500, 0), floorLevel: null))
 			grainsOfSand++;
 
 		yield return grainsOfSand.ToString();
@@ -15,7 +15,7 @@ public class Day14 : IDay
 		cave.ClearSand();
 
 		grainsOfSand = 0;
-		while(cave.DropSand(new(500, 0), floorLevel: cave.MaxY + 2))
+		while(cave.DropSand((500, 0), floorLevel: cave.MaxY + 2))
 			grainsOfSand++;
 
 		yield return grainsOfSand.ToString();
@@ -29,7 +29,7 @@ public class Day14 : IDay
 			{
 				var vertexes = line.Split(" -> ")
 					.Select(x => x.Split(','))
-					.Select(x => new Vector(int.Parse(x[0]), int.Parse(x[1])))
+					.Select(x => new Vector2D(int.Parse(x[0]), int.Parse(x[1])))
 					.ToList();
 				
 				foreach (var (start, end) in vertexes.Zip(vertexes.Skip(1)))
@@ -37,18 +37,18 @@ public class Day14 : IDay
 					m_rock.Add(start);
 					m_rock.Add(end);
 
-					var diff = end.Subtract(start);
+					var diff = end - start;
 					var direction =
-						diff.Y > 0 ? Vector.Down :
-						diff.Y < 0 ? Vector.Up :
-						diff.X > 0 ? Vector.Right :
-						diff.X < 0 ? Vector.Left :
+						diff.Y > 0 ? Vector2D.Down :
+						diff.Y < 0 ? Vector2D.Up :
+						diff.X > 0 ? Vector2D.Right :
+						diff.X < 0 ? Vector2D.Left :
 						throw new ArgumentOutOfRangeException();
 
 					var point = start;
 					do
 					{
-						point = point.Add(direction);
+						point += direction;
 						m_rock.Add(point);
 					} while (point != end);
 				}
@@ -61,7 +61,7 @@ public class Day14 : IDay
 
 		public void ClearSand() => m_sand.Clear();
 
-		public bool DropSand(Vector from, int? floorLevel)
+		public bool DropSand(Vector2D from, int? floorLevel)
 		{
 			if (floorLevel is null && from.Y > MaxY)
 				return false;
@@ -69,13 +69,13 @@ public class Day14 : IDay
 			if (IsBlocked(from, floorLevel))
 				return false;
 
-			var next = from.Add(Vector.Down);
+			var next = from + Vector2D.Down;
 			if (IsBlocked(next, floorLevel))
 			{
-				next = from.Add(Vector.Down).Add(Vector.Left);
+				next = from + Vector2D.Down + Vector2D.Left;
 				if (IsBlocked(next, floorLevel))
 				{
-					next = from.Add(Vector.Down).Add(Vector.Right);
+					next = from + Vector2D.Down + Vector2D.Right;
 					if (IsBlocked(next, floorLevel))
 					{
 						m_sand.Add(from);
@@ -87,10 +87,10 @@ public class Day14 : IDay
 			return DropSand(next, floorLevel);
 		}
 
-		private bool IsBlocked(Vector point, int? floorLevel)
+		private bool IsBlocked(Vector2D point, int? floorLevel)
 			=> point.Y == floorLevel || m_rock.Contains(point) || m_sand.Contains(point);
 
-		private readonly HashSet<Vector> m_rock = new HashSet<Vector>();
-		private readonly HashSet<Vector> m_sand = new HashSet<Vector>();
+		private readonly HashSet<Vector2D> m_rock = new HashSet<Vector2D>();
+		private readonly HashSet<Vector2D> m_sand = new HashSet<Vector2D>();
 	}
 }

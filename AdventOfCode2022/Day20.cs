@@ -4,12 +4,9 @@ public class Day20 : IDay
 {
 	public IEnumerable<string> Execute(IReadOnlyList<string> input)
 	{
-		checked
-		{
-			var values = input.Select(int.Parse).ToList();
-			yield return CalculateCoordinates(values, 1, 1).Sum().ToString();
-			yield return CalculateCoordinates(values, 10, 811589153).Sum().ToString();
-		}
+		var values = input.Select(int.Parse).ToList();
+		yield return CalculateCoordinates(values, 1, 1).Sum().ToString();
+		yield return CalculateCoordinates(values, 10, 811589153).Sum().ToString();
 	}
 
 	public IReadOnlyList<long> CalculateCoordinates(IReadOnlyList<int> values, int mixCount, long decryptionKey)

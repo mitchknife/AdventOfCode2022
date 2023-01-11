@@ -7,60 +7,103 @@ public class Day16 : IDay
 {
 	public IEnumerable<string> Execute(IReadOnlyList<string> input)
 	{
-		var valves = input
-			.Select(x => x.Split(' '))
-			.Select(x => new Valve(
-				Id: x[1],
-				FlowRate: int.Parse(x[4].Split('=')[1].Trim(';')),
-				AdjacentValveIds: x.Skip(9).Select(x => x.Trim(',')).ToList()))
-			.ToList();
+		var model = new Model(input);
+		yield return model.CalculateMaxPressureReleased(30).ToString();
+	}
 
-		var graph = new Graph();
-		var valvesByNodeId = new Dictionary<uint, Valve>();
-		var nodeIdsByValveId = new Dictionary<string, uint>();
-		foreach (var valve in valves)
-		{
-			var nodeId = graph.AddNode();
-			valvesByNodeId.Add(nodeId, valve);
-			nodeIdsByValveId.Add(valve.Id, nodeId);
-		}
-		
-		foreach (var pair in valvesByNodeId)
-		{
-			foreach (var adjacentNodeId in pair.Value.AdjacentValveIds.Select(id => nodeIdsByValveId[id]))
-				graph.Connect(pair.Key, adjacentNodeId, 1);
-		}
-
-		yield return CalculateMaxPressureRelease(valves.First(), 30, 0).ToString();
-
-		int CalculateMaxPressureRelease(Valve fromValve, int minutesLeft, int currentPressure)
-		{
-			var bestPaths = valves
-				.Where(x => x.Id != fromValve.Id && !x.IsOpen)
-				.Select(v => (valve: v, result: graph.Dijkstra(nodeIdsByValveId[fromValve.Id], nodeIdsByValveId[v.Id])))
-				.Select(x => (valve: x.valve, totalRelease: x.valve.FlowRate * (minutesLeft - x.result.Distance - 1), distance: x.result.Distance))
-				.Where(x => x.totalRelease > 0)
-				.OrderByDescending(x => Math.Ceiling((decimal) x.valve.FlowRate / (decimal) x.distance))
-				.ThenBy(x => x.distance)
-				.ToList();
-			
-			if (bestPaths.Count == 0)
-				return currentPressure;
-			
-			var (toValve, totalRelease, distance) = bestPaths.First();
-			minutesLeft = minutesLeft - distance - 1;
-			toValve.IsOpen = true;
-			currentPressure += totalRelease;
-
-			return CalculateMaxPressureRelease(toValve, minutesLeft, currentPressure);
-		}
-
-		yield break;
-	} 
-
-	private record Valve(string Id, int FlowRate, IReadOnlyList<string> AdjacentValveIds)
+	private record Valve(string Id, uint NodeId, int FlowRate)
 	{
-		public bool IsOpen { get; set; }	 
-		public override string ToString() => $"{Id} | {FlowRate:D2} | {string.Join(", ", AdjacentValveIds)}";
+		public override string ToString() => $"{Id}:{FlowRate:D2}";
+	}
+
+	private class Model
+	{
+		public Model(IReadOnlyList<string> input)
+		{
+			m_graph = new Graph();
+			m_valves = input
+				.Select(x => x.Split(' '))
+				.Select(x => new Valve(x[1], m_graph.AddNode(), int.Parse(x[4].Split('=')[1].Trim(';'))))
+				.ToDictionary(x => x.NodeId);
+			
+			foreach (var tokens in input.Select(x => x.Split(' ')))
+			{
+				var fromValve = GetValveById(tokens[1]);
+				foreach (var toValve in tokens.Skip(9).Select(x => GetValveById(x.Trim(','))))
+					m_graph.Connect(fromValve.NodeId, toValve.NodeId, 1);
+			}
+		}
+
+		public int CalculateMaxPressureReleased(int minutes)
+		{
+			int maxPressureReleased = 0;
+			var goodValves = m_valves.Values.Where(x => x.FlowRate > 0).ToArray();
+			calculateMaxPressureReleased(GetValveById("AA"), Array.Empty<Valve>(), 0, minutes);
+			return maxPressureReleased;
+
+			void calculateMaxPressureReleased(Valve currentValve, IReadOnlyList<Valve> currentPath, int pressureReleased, int timeRemaining )
+			{
+				// We need at least three minutes to open a valve and get some value from it.
+				if (timeRemaining < 3)
+					return;
+
+				var availableValves = goodValves
+					.Except(currentPath)
+					.OrderByDescending(x => x.FlowRate)
+					.ToList();
+
+				if (availableValves.Count == 0)
+					return;
+
+				int maxPotentialPresureReleased = pressureReleased + availableValves
+					.OrderByDescending(x => x.FlowRate)
+					.Select((x, i) => x.FlowRate * (timeRemaining - (2 * (i + 1))))
+					.TakeWhile(x => x > 0)
+					.Sum();
+				
+				// Bail if this path can't possibly win, even with the best possible node arrangement.
+				if (maxPotentialPresureReleased <= maxPressureReleased)
+					return;
+
+				foreach (var nextValve in availableValves)
+				{
+					var path = GetPath(currentValve, nextValve);
+
+					// Bail if we can't get to the valve before time runs out.
+					int nextTimeRemaining = timeRemaining - path.Count;
+					if (nextTimeRemaining <= 0)
+						continue;
+
+					// Bail if there is a valve with a greater flow rate than the destination valve.
+					// We know opening up that valve instead would be a better path.
+					if (nextValve != path.Where(availableValves.Contains).MaxBy(x => x.FlowRate))
+						continue;
+
+					var nextCurrentPath = currentPath.Append(nextValve).ToList();
+					int nextPressureReleased = pressureReleased + (nextValve.FlowRate * nextTimeRemaining);
+
+					if (nextPressureReleased > maxPressureReleased)
+						maxPressureReleased = nextPressureReleased;
+
+					calculateMaxPressureReleased(nextValve, nextCurrentPath, nextPressureReleased, nextTimeRemaining);
+				}
+			}
+		}
+
+		private Valve GetValveById(string id) => m_valves.Values.Single(x => x.Id == id);
+
+		private IReadOnlyList<Valve> GetPath(Valve from, Valve to)
+		{
+			if (!m_pathCache.TryGetValue((from.NodeId, to.NodeId), out var path))
+			{
+				var result = m_graph.Dijkstra(from.NodeId, to.NodeId);
+				m_pathCache[(from.NodeId, to.NodeId)] = path = result.GetPath().Select(nodeId => m_valves[nodeId]).ToList();
+			}
+			return path;
+		}
+
+		private readonly Graph m_graph;
+		private readonly IReadOnlyDictionary<uint, Valve> m_valves;
+		private readonly Dictionary<(uint, uint), IReadOnlyList<Valve>> m_pathCache = new Dictionary<(uint, uint), IReadOnlyList<Valve>>();
 	}
 }

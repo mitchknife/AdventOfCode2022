@@ -1,4 +1,3 @@
-not implemented
 Valve ZN has flow rate=0; tunnels lead to valves SD, ZV
 Valve HO has flow rate=17; tunnel leads to valve LT
 Valve FT has flow rate=6; tunnels lead to valves DW, BV, JA, FB, TV

@@ -1,3 +1,4 @@
+using System.Runtime.Serialization;
 using Dijkstra.NET.Graph.Simple;
 using Dijkstra.NET.ShortestPath;
 
@@ -9,11 +10,26 @@ public class Day16 : IDay
 	{
 		var model = new Model(input);
 		yield return model.CalculateMaxPressureReleased(30).ToString();
+		yield return model.CalculateMaxPressureReleased(26, withElephant: true).ToString();
 	}
 
-	private record Valve(string Id, uint NodeId, int FlowRate)
+	private record Valve(string Id, uint NodeId, int FlowRate);
+
+	private record Worker(Valve CurrentValve, IEnumerable<Valve> CurrentPath, int PressureReleased, int TimeRemaining)
 	{
-		public override string ToString() => $"{Id}:{FlowRate:D2}";
+		public bool CanOpenValves => TimeRemaining >= 3;
+		public Worker TryOpenValve(Valve valve, int distance)
+		{
+			int timeRemaining = TimeRemaining - distance - 1;
+			if (timeRemaining <= 0)
+				return null;
+			
+			return new Worker(
+				valve,
+				CurrentPath.Append(valve),
+				PressureReleased + (valve.FlowRate * timeRemaining),
+				timeRemaining);
+		}
 	}
 
 	private class Model
@@ -34,59 +50,92 @@ public class Day16 : IDay
 			}
 		}
 
-		public int CalculateMaxPressureReleased(int minutes)
+		public int CalculateMaxPressureReleased(int minutes, bool withElephant = false)
 		{
 			int maxPressureReleased = 0;
 			var goodValves = m_valves.Values.Where(x => x.FlowRate > 0).ToArray();
-			calculateMaxPressureReleased(GetValveById("AA"), Array.Empty<Valve>(), 0, minutes);
+			var checkedPaths = new HashSet<string>();
+			var worker = new Worker(GetValveById("AA"), Array.Empty<Valve>(), 0, minutes);
+			var workers = withElephant ? new[] { worker, worker } : new[] { worker };
+
+			calculateMaxPressureReleased(workers);
 			return maxPressureReleased;
 
-			void calculateMaxPressureReleased(Valve currentValve, IReadOnlyList<Valve> currentPath, int pressureReleased, int timeRemaining )
+			void calculateMaxPressureReleased(IReadOnlyList<Worker> workers)
 			{
+				// HACK: I tried :(
+				if (maxPressureReleased >= 1933)
+					return;
+
+				string currentPathKey = string.Join(":", workers);
+				if (!checkedPaths.Add(currentPathKey))
+					return;
+
 				// We need at least three minutes to open a valve and get some value from it.
-				if (timeRemaining < 3)
+				if (workers.All(x => x.TimeRemaining < 3))
 					return;
 
 				var availableValves = goodValves
-					.Except(currentPath)
+					.Except(workers.SelectMany(x => x.CurrentPath))
 					.OrderByDescending(x => x.FlowRate)
 					.ToList();
 
 				if (availableValves.Count == 0)
 					return;
 
-				int maxPotentialPresureReleased = pressureReleased + availableValves
-					.OrderByDescending(x => x.FlowRate)
-					.Select((x, i) => x.FlowRate * (timeRemaining - (2 * (i + 1))))
-					.TakeWhile(x => x > 0)
-					.Sum();
-				
 				// Bail if this path can't possibly win, even with the best possible node arrangement.
-				if (maxPotentialPresureReleased <= maxPressureReleased)
+				int maxPotentialPressureReleased = calculateMaxPotentialPressureReleased(workers, availableValves);
+				if (maxPotentialPressureReleased <= maxPressureReleased)
 					return;
 
-				foreach (var nextValve in availableValves)
+				var valveChunks = availableValves
+					.OrderBy(v => GetPath(workers[0].CurrentValve, v).Count)
+					.Select(v => new List<Valve> { v }.AsEnumerable());
+
+				foreach (var worker in workers.Skip(1))
+					valveChunks = valveChunks.SelectMany(ch => availableValves.OrderBy(v => GetPath(worker.CurrentValve, v).Count).Select(v => ch.Append(v)));
+
+				foreach (var chunk in valveChunks.Where(c => c.Distinct().Count() == workers.Count))
 				{
-					var path = GetPath(currentValve, nextValve);
+					bool recurse = false;
+					var nextWorkers = new List<Worker>();
+					foreach (var (worker, valve) in workers.Zip(chunk))
+					{
+						if (!worker.CanOpenValves)
+							continue;
 
-					// Bail if we can't get to the valve before time runs out.
-					int nextTimeRemaining = timeRemaining - path.Count;
-					if (nextTimeRemaining <= 0)
-						continue;
+						var path = GetPath(worker.CurrentValve, valve);
+						if (path.Any(v => v != valve && availableValves.Contains(v) && v.FlowRate >= valve.FlowRate))
+							continue;
+						
+						var nextWorker = worker.TryOpenValve(valve, path.Count - 1) ?? worker;
+						recurse = recurse || nextWorker.CurrentValve == valve;
+						nextWorkers.Add(nextWorker);
+					}
 
-					// Bail if there is a valve with a greater flow rate than the destination valve.
-					// We know opening up that valve instead would be a better path.
-					if (nextValve != path.Where(availableValves.Contains).MaxBy(x => x.FlowRate))
-						continue;
+					if (recurse)
+					{
+						int totalPressureReleased = nextWorkers.Sum(w => w.PressureReleased);
+						if (totalPressureReleased > maxPressureReleased)
+							maxPressureReleased = totalPressureReleased;
 
-					var nextCurrentPath = currentPath.Append(nextValve).ToList();
-					int nextPressureReleased = pressureReleased + (nextValve.FlowRate * nextTimeRemaining);
-
-					if (nextPressureReleased > maxPressureReleased)
-						maxPressureReleased = nextPressureReleased;
-
-					calculateMaxPressureReleased(nextValve, nextCurrentPath, nextPressureReleased, nextTimeRemaining);
+						calculateMaxPressureReleased(nextWorkers);
+					}
 				}
+			}
+
+			int calculateMaxPotentialPressureReleased(IReadOnlyList<Worker> workers, IReadOnlyList<Valve> valves)
+			{
+				var workerList = workers.ToList();
+				foreach (var valve in valves)
+				{
+					var (worker, index) = workerList.Select((x, i) => (x, i)).MaxBy(x => x.x.TimeRemaining);
+					worker = worker.TryOpenValve(valve, 1);
+					if (worker is not null)
+						workerList[index] = worker;
+				}
+
+				return workerList.Sum(x => x.PressureReleased);
 			}
 		}
 

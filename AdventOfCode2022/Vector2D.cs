@@ -1,3 +1,4 @@
+using System.Numerics;
 namespace AdventOfCode2022;
 
 public record Vector2D(int X, int Y)
@@ -15,6 +16,8 @@ public record Vector2D(int X, int Y)
 		return Math.Abs(diff.X) + Math.Abs(diff.Y);
 	}
 
+	public Vector2D Move(Direction direction, int count = 1) => Add(GetVector(direction) * count);
+
 	public static Vector2D operator +(Vector2D a, Vector2D b) => a.Add(b);
 	public static Vector2D operator +(Vector2D a, int b) => a.Add(b);
 	public static Vector2D operator -(Vector2D a, Vector2D b) => a.Subtract(b);
@@ -30,4 +33,13 @@ public record Vector2D(int X, int Y)
 	public static readonly Vector2D Down = new(0, 1);
 	public static readonly Vector2D Left = new(-1, 0);
 	public static readonly Vector2D Right = new(1, 0);
+
+	private static Vector2D GetVector(Direction direction) => direction switch
+	{
+		Direction.Up => Vector2D.Up,
+		Direction.Right => Vector2D.Right,
+		Direction.Down => Vector2D.Down,
+		Direction.Left => Vector2D.Left,
+		_ => throw new ArgumentOutOfRangeException(),
+	};
 }

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Reflection;
 using FluentAssertions;
 using Xunit;
@@ -11,10 +12,27 @@ public class DayTests
 	[DayTestCases(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25)]
 	public void AllDays(IDay day, string input, string expectedOutput)
 	{
+		string testName = day.GetType().Name;
+		bool isFirstTest = m_testNames.Add(testName);
+		if (isFirstTest)
+		{
+			m_testStopwatch = Stopwatch.StartNew();
+			Console.Write($"{testName}...");
+		}
+
 		var inputLines = input.Split(Environment.NewLine);
 		var expectedOutputLines = expectedOutput.Split(Environment.NewLine);
 		day.Execute(inputLines).Should().Equal(expectedOutputLines);
+
+		if (!isFirstTest)
+		{
+			m_testStopwatch.Stop();
+			Console.WriteLine($"done ({m_testStopwatch.ElapsedMilliseconds}ms)");
+		}
 	}
+
+	private static Stopwatch m_testStopwatch;
+	private static readonly HashSet<string> m_testNames = new HashSet<string>();
 }
 
 public class DayTestCasesAttribute : DataAttribute

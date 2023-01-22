@@ -1,4 +1,3 @@
-slow test
 2000000
 4000000
 Sensor at x=3890859, y=2762958: closest beacon is at x=4037927, y=2985317

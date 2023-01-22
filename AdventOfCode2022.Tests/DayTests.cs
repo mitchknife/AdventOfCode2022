@@ -24,8 +24,6 @@ public class DayTestCasesAttribute : DataAttribute
 		m_dayNumbers = days;
 	}
 
-	public static bool RunSlowTests = bool.Parse(Environment.GetEnvironmentVariable(nameof(RunSlowTests)) ?? "false");
-
 	public override IEnumerable<object[]> GetData(MethodInfo testMethod)
 	{
 		var notImplementedTests = new List<string>();
@@ -60,17 +58,6 @@ public class DayTestCasesAttribute : DataAttribute
 				{
 					notImplementedTests.Add($"{dayType.Name}/{inFileName}");
 					continue;
-				}
-
-				if (input.StartsWith("slow test"))
-				{
-					if (!RunSlowTests)
-					{
-						slowTests.Add($"{dayType.Name}/{inFileName}");
-						continue;
-					}
-
-					input = input.Substring(9).TrimStart();
 				}
 
 				yield return new object[] { day, input, output };

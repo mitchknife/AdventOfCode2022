@@ -27,7 +27,6 @@ public class DayTestCasesAttribute : DataAttribute
 	public override IEnumerable<object[]> GetData(MethodInfo testMethod)
 	{
 		var notImplementedTests = new List<string>();
-		var slowTests = new List<string>();
 		foreach (int dayNumber in m_dayNumbers)
 		{
 			string dayTypeName = $"Day{dayNumber:D2}";
@@ -66,8 +65,6 @@ public class DayTestCasesAttribute : DataAttribute
 
 		if (notImplementedTests.Count > 0)
 			Console.WriteLine($"Skipping not implemented tests: {string.Join(", ", notImplementedTests)}");
-		if (slowTests.Count > 0)
-			Console.WriteLine($"Skipping slow tests: {string.Join(", ", slowTests)}");
 	}
 
 	private readonly IReadOnlyList<int> m_dayNumbers;

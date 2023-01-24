@@ -39,15 +39,15 @@ public class DayTestCasesAttribute : DataAttribute
 {
 	public DayTestCasesAttribute(params int[] days)
 	{
-		m_dayNumbers = days;
+		m_days = s_overrideDays ?? days;
 	}
 
 	public override IEnumerable<object[]> GetData(MethodInfo testMethod)
 	{
 		var notImplementedTests = new List<string>();
-		foreach (int dayNumber in m_dayNumbers)
+		foreach (int day in m_days)
 		{
-			string dayTypeName = $"Day{dayNumber:D2}";
+			string dayTypeName = $"Day{day:D2}";
 			var dayType = typeof(IDay).Assembly.GetTypes().FirstOrDefault(x => x.Name == dayTypeName);
 			if (dayType is null)
 				throw new InvalidOperationException($"Type does not exist: {dayTypeName}");
@@ -56,7 +56,6 @@ public class DayTestCasesAttribute : DataAttribute
 			if (!Directory.Exists(testCasesFolder))
 				throw new InvalidOperationException($"Folder does not exist: {testCasesFolder}");
 
-			var day = (IDay) Activator.CreateInstance(dayType);
 			foreach (var files in Directory.GetFiles(testCasesFolder, "*.txt").GroupBy(file => Path.GetFileName(file).Split('_')[0]))
 			{
 				string inFileName = $"{files.Key}_in.txt";
@@ -77,7 +76,7 @@ public class DayTestCasesAttribute : DataAttribute
 					continue;
 				}
 
-				yield return new object[] { day, input, output };
+				yield return new object[] { (IDay) Activator.CreateInstance(dayType), input, output };
 			}
 		}
 
@@ -85,5 +84,10 @@ public class DayTestCasesAttribute : DataAttribute
 			Console.WriteLine($"Skipping not implemented tests: {string.Join(", ", notImplementedTests)}");
 	}
 
-	private readonly IReadOnlyList<int> m_dayNumbers;
+	private static IReadOnlyList<int> s_overrideDays = Environment.GetEnvironmentVariable("DAYS")
+		?.Split(',')
+		.Select(int.Parse)
+		.ToArray();
+
+	private readonly IReadOnlyList<int> m_days;
 }
